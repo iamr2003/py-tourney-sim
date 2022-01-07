@@ -1,6 +1,5 @@
 import random
 import numpy
-import functools
 
 #attributes will be modeled as a range via gaussian distribution, where 99% of values fall between bounds(aka 2.58 stdevs)
 #because state is cached in structures, calling some methods multiple times can lead to bad things
@@ -25,13 +24,15 @@ class boundGen:
 
 #a team who always plays exactly the same
 class teamStatic:
-    def __init__(self,staticAttr ={}) -> None:
+    def __init__(self,number = 0,staticAttr ={}) -> None:
+        self.number = number        
         self.attr = staticAttr
     def play(self):
         return self.attr
 
 #a team whose performance varies between matches
 class teamReal:
+    #if you want to initialize gen directly, just assign it
     def __init__(self,number = 0,attrGen = {}) -> None:
         self.number = number
         self.attrBounds = {}
@@ -47,14 +48,6 @@ class teamReal:
             attr[k] = randNormal(v)
         return attr
 
-#rules is a dictionary to functions, where the function scores the rule
-def scoreAttrs(attrs,rules):
-    attrScore = {}
-    #basically a map, but I don't like python fp tools
-    for k,v in rules:
-        attrScore[k] += v(attrs[k])
-    return attrScore
-
 # gah proper maps/folds would clean up much of this
 class alliance:
     def __init__(self,teams = []) -> None:
@@ -63,19 +56,26 @@ class alliance:
         self.result = []
         for team in self.teams:
             self.result.append(team.play())
-        self.total()
-        self.score()
+        self.mergeResults()
 
-    def total(self):
+    def mergeResults(self):
         self.comboResult = {}
         for dict in self.result:
-            for k , v in dict:
-                self.comboResult[k] += v
+            for k , v in dict.items():
+                if k in self.comboResult:
+                    self.comboResult[k] += v
+                else:
+                    self.comboResult[k] = v
 
-    def score(self,rules):    
-        self.scoredResult = scoreAttrs(self.comboResult,rules)
-        for k , v in self.scoredResult:
-            self.total += v
+    def score(self,scorer):
+        #allows for lots of flexibility in scoring
+        self.total =  scorer(self.result)
+
+    def str(self):
+        o_str = ""
+        for t in self.teams:
+            o_str = o_str + " " + str(t.number)
+        return o_str
 
 class match:
     def __init__(self,red = alliance,blue = alliance) -> None:
@@ -83,9 +83,24 @@ class match:
         self.blue = blue
         # to be used in scheduler/ranker
         self.surrogates = []
-    def play(self):
+    def play(self,scorer):
         self.red.play()
+        self.red.score(scorer)
         self.blue.play()
+        self.blue.score(scorer)
+        if(self.red.total > self.blue.total):
+            self.winner = "red"
+        elif(self.red.total < self.blue.total):
+            self.winner = "blue"
+        else:
+            self.winner = "tie"
+
+    def print(self):
+        print("Red: ", self.red.str())
+        print("Blue:",self.blue.str())
+        print("Winner - ",self.winner)
+        print("Red Score: ",self.red.total)
+        print("Blue Score: ",self.blue.total)
 
 class schedule:
     def __init__(self,teamSet={}) -> None:
@@ -94,6 +109,7 @@ class schedule:
 
     def gen_matches(self, n):
         #will deal with surrogates later
+        #could be more nuanced, but this should work
         while(n>0):
             teamList = list(self.teamSet)
             random.shuffle(teamList)
