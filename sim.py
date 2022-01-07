@@ -44,7 +44,7 @@ class teamReal:
 
     def play(self):
         attr = {}
-        for k,v in self.attrBounds:
+        for k,v in self.attrBounds.items():
             attr[k] = randNormal(v)
         return attr
 
@@ -101,6 +101,7 @@ class match:
         print("Winner - ",self.winner)
         print("Red Score: ",self.red.total)
         print("Blue Score: ",self.blue.total)
+        print("\n")
 
 class schedule:
     def __init__(self,teamSet={}) -> None:
@@ -119,7 +120,20 @@ class schedule:
                 self.matches.append(match(red,blue))
                 n = n-1
 
-#gah need to write a quick ranker
-#do some light testing, write a short demo program
+class event:
+    def __init__(self,attrGen,nTeams = 0,nMatches = 0) -> None:
+        self.teamSet = set()
+        for x in range(0,nTeams):
+            self.teamSet.add(teamReal(1000+x,attrGen))
+        self.schedule = schedule(self.teamSet)
+        self.schedule.gen_matches(nMatches)
 
-                
+    def play(self,scorer):
+        for m in self.schedule.matches:
+            m.play(scorer)
+    
+    def printMatchResults(self):
+        for m in self.schedule.matches:
+            m.print()
+
+#gah need to write a quick ranker

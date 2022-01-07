@@ -1,4 +1,4 @@
-from sim import teamStatic,teamReal,alliance,match,schedule
+from sim import teamStatic,teamReal,alliance,match,schedule,event
 from sim import boundGen as bg
 from rules import basicScorer
 import rules
@@ -45,7 +45,6 @@ b3 = teamStatic(6001,{
 m = match(alliance([r1,r2,r3]),alliance([b1,b2,b3]))
 m.play(IRsimple)
 m.print()
-print("\n")
 
 #can grab more info if you want it
 print("Red alliance objects scored:")
@@ -57,3 +56,17 @@ print(m.blue.teams[0].attr,"\n")
 print("\n")
 
 #using teamReal and boundGenerators,much more can be done
+#bound generator syntax is bg(minMin,minMax,maxMin,maxMax)
+#and then the teams will get a respective min, max in each category
+#don't let bounds cross, or will get annoying
+
+print("Example with event simulation and teamReal: \n")
+Week1_IRsimplebg = {
+    "innerGoals" : bg(0,2,4,4),
+    "outerGoals" : bg(1,4,5,9),
+    "climbs"     : bg(0,1,1,2)
+}
+
+w1_event = event(Week1_IRsimplebg,10,5)
+w1_event.play(IRsimple)
+w1_event.printMatchResults()
