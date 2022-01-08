@@ -69,4 +69,6 @@ Week1_IRsimplebg = {
 
 w1_event = event(Week1_IRsimplebg,10,5)
 w1_event.play(IRsimple)
+#ranked in progress
+#w1_event.printTopRanked(3,rules.IRSimpleRanker)
 w1_event.printMatchResults()

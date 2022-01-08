@@ -135,5 +135,9 @@ class event:
     def printMatchResults(self):
         for m in self.schedule.matches:
             m.print()
-
+    def printTopRanked(self,nTop,ranker):
+        ranks = ranker(self.schedule.matches)
+        for i in min(len(ranks),nTop):
+            print("Rank ",i,":",ranks[i].number)
+            print(ranks[i].attrBounds)
 #gah need to write a quick ranker

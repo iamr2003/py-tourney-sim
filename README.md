@@ -1,1 +1,2 @@
 # py-tourney-sim
+These scripts allow the definition of custom FRC rulesets(like a new game!), and then enables the simulation of teams, matches, and events. Look at main.py for examples of what the scripts can do.

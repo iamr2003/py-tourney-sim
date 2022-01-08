@@ -3,6 +3,8 @@
 
 
 #rules is a dictionary to functions, where the function scores the rule
+from sim import teamReal
+
 def scoreAttrs(attrs,rules):
     attrScore = {}
     #basically a map, but I don't like python fp tools
@@ -50,3 +52,75 @@ infRechargeSimple = {
     "outerGoals":mult(2),
     "climbs":IRclimbSimple
 }
+
+#I'd like to generalize a bit more, but we'll see
+#the repeated patterns here are rough
+#gah dict defaults are annoying
+def IRSimpleRanker(matchList):
+    rankinfo = {}
+    for match in matchList:
+        #total matches
+        for alliance in [match.red,match.blue]:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "n" in rankinfo[team.number]:
+                            rankinfo[team.number]["n"] += 1
+        #WP
+        if match.winner == "red" or match.winner == "blue":
+            if match.winner == "red":
+                winner = match.red
+            else:
+                winner = match.blue
+            for team in winner.teams:
+                if team.number in rankinfo:
+                    if "RP" in rankinfo[team.number]:
+                        rankinfo[team.number]["RP"] += 2
+                    else:
+                        rankinfo[team.number]["RP"] = 2
+                else:
+                    rankinfo[team.number].append({"RP":2})
+        else:
+            for alliance in [match.red,match.blue]:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "RP" in rankinfo[team.number]:
+                            rankinfo[team.number]["RP"] += 1
+                        else:
+                            rankinfo[team.number]["RP"] = 1
+                    else:
+                        rankinfo[team.number].append({"RP":1})
+        #RP
+        for alliance in [match.red,match.blue]:
+            #say 2 climbs 1 park for RP and 49 balls for RP
+            totalBalls = alliance.comboResult["innerGoals"] + alliance.comboResult["outerGoals"]
+            if totalBalls >= 49:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "RP" in rankinfo[team.number]:
+                            rankinfo[team.number]["RP"] += 1
+                        else:
+                            rankinfo[team.number]["RP"] = 1
+                    else:
+                        rankinfo[team.number].append({"RP":1})
+            if alliance.comboResult["climbs"]>=5:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "RP" in rankinfo[team.number]:
+                            rankinfo[team.number]["RP"] += 1
+                        else:
+                            rankinfo[team.number]["RP"] = 1
+                    else:
+                        rankinfo[team.number].append({"RP":1})
+    def compare(n1,n2):
+        n1pts = rankinfo[n1]["RP"]/rankinfo[n1]["n"]
+        n2pts = rankinfo[n2]["RP"]/rankinfo[n2]["n"]      
+        if n1pts<n2pts:
+            return -1
+        elif n1pts>n2pts:
+            return 1
+        else:
+            return 0
+    
+    teamList = list(rankinfo.keys())
+    teamList.sort(key = compare)
+    return teamList
