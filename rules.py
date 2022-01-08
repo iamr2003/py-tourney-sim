@@ -3,6 +3,7 @@
 
 
 #rules is a dictionary to functions, where the function scores the rule
+from typing import MutableMapping
 from sim import teamReal
 
 def scoreAttrs(attrs,rules):
@@ -109,6 +110,114 @@ def IRSimpleRanker(matchList,teamSet):
                     else:
                         rankinfo[team.number].append({"RP":1})
             if alliance.comboResult["climbs"]>=5:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "RP" in rankinfo[team.number]:
+                            rankinfo[team.number]["RP"] += 1
+                        else:
+                            rankinfo[team.number]["RP"] = 1
+                    else:
+                        rankinfo[team.number] = {"RP":1}
+
+    # need to figure how to sort my multiple keys
+    def aveRP(n1): 
+        if n1.number in rankinfo and "RP" in rankinfo[n1.number] and "n"  in rankinfo[n1.number]:
+            return rankinfo[n1.number]["RP"]/rankinfo[n1.number]["n"]
+        else:
+            return 0
+
+    teamList = list(teamSet)
+    ranking = sorted(teamList,key = aveRP)
+    return ranking
+
+#RAPID REACT FULL RULESET
+
+#require python 3.10
+#climbs 0,1,2,3,4 - none,low,mid,high, trav
+def RRclimb(state):
+    pts = {
+        0:0,
+        1:4,
+        2:6,
+        3:10,
+        4:15
+    }
+    return pts[state]
+
+
+RR = {
+    "taxi":mult(2),
+    "autoLower":mult(2),
+    "autoUpper":mult(4),
+    "teleopLower":mult(1),
+    "teleopUpper":mult(2),
+    "climbs":RRclimb
+}
+
+def RR_ranker(matchList,teamSet):
+    rankinfo = {}
+    for match in matchList:
+        #total matches
+        for alliance in [match.red,match.blue]:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "n" in rankinfo[team.number]:
+                            rankinfo[team.number]["n"] += 1
+                        else:
+                            rankinfo[team.number]["n"] = 1
+                    else:
+                        rankinfo[team.number] = {"n":1}
+        #WP
+        if match.winner == "red" or match.winner == "blue":
+            if match.winner == "red":
+                winner = match.red
+            else:
+                winner = match.blue
+            for team in winner.teams:
+                if team.number in rankinfo:
+                    if "RP" in rankinfo[team.number]:
+                        rankinfo[team.number]["RP"] += 2
+                    else:
+                        rankinfo[team.number]["RP"] = 2
+                else:
+                    rankinfo[team.number] = {"RP":2}
+        else:
+            for alliance in [match.red,match.blue]:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "RP" in rankinfo[team.number]:
+                            rankinfo[team.number]["RP"] += 1
+                        else:
+                            rankinfo[team.number]["RP"] = 1
+                    else:
+                        rankinfo[team.number] = {"RP":1}
+        #RP
+        for alliance in [match.red,match.blue]:
+            #climb pts >= 15
+            climbpts = 0
+            autoBalls = 0
+            totalBalls = 0
+            for result in alliance.result:
+                climbpts += RRclimb(result["climbs"])
+                autoBalls += result["autoLower"] + result["autoUpper"]
+                totalBalls += result["autoLower"] + result["autoUpper"] + result["teleopLower"] + result["teleopUpper"]
+
+            if climbpts >= 15:
+                for team in alliance.teams:
+                    if team.number in rankinfo:
+                        if "RP" in rankinfo[team.number]:
+                            rankinfo[team.number]["RP"] += 1
+                        else:
+                            rankinfo[team.number]["RP"] = 1
+                    else:
+                        rankinfo[team.number].append({"RP":1})
+
+            if autoBalls >=5:
+                ballsNeeded = 18
+            else:
+                ballsNeeded = 20
+
+            if totalBalls >= ballsNeeded:
                 for team in alliance.teams:
                     if team.number in rankinfo:
                         if "RP" in rankinfo[team.number]:
