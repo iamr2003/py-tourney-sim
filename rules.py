@@ -56,7 +56,9 @@ infRechargeSimple = {
 #I'd like to generalize a bit more, but we'll see
 #the repeated patterns here are rough
 #gah dict defaults are annoying
-def IRSimpleRanker(matchList):
+#next step would be to abstract out RP defs, but this will be fine for now
+
+def IRSimpleRanker(matchList,teamSet):
     rankinfo = {}
     for match in matchList:
         #total matches
@@ -65,6 +67,10 @@ def IRSimpleRanker(matchList):
                     if team.number in rankinfo:
                         if "n" in rankinfo[team.number]:
                             rankinfo[team.number]["n"] += 1
+                        else:
+                            rankinfo[team.number]["n"] = 1
+                    else:
+                        rankinfo[team.number] = {"n":1}
         #WP
         if match.winner == "red" or match.winner == "blue":
             if match.winner == "red":
@@ -78,7 +84,7 @@ def IRSimpleRanker(matchList):
                     else:
                         rankinfo[team.number]["RP"] = 2
                 else:
-                    rankinfo[team.number].append({"RP":2})
+                    rankinfo[team.number] = {"RP":2}
         else:
             for alliance in [match.red,match.blue]:
                 for team in alliance.teams:
@@ -88,7 +94,7 @@ def IRSimpleRanker(matchList):
                         else:
                             rankinfo[team.number]["RP"] = 1
                     else:
-                        rankinfo[team.number].append({"RP":1})
+                        rankinfo[team.number] = {"RP":1}
         #RP
         for alliance in [match.red,match.blue]:
             #say 2 climbs 1 park for RP and 49 balls for RP
@@ -110,17 +116,15 @@ def IRSimpleRanker(matchList):
                         else:
                             rankinfo[team.number]["RP"] = 1
                     else:
-                        rankinfo[team.number].append({"RP":1})
-    def compare(n1,n2):
-        n1pts = rankinfo[n1]["RP"]/rankinfo[n1]["n"]
-        n2pts = rankinfo[n2]["RP"]/rankinfo[n2]["n"]      
-        if n1pts<n2pts:
-            return -1
-        elif n1pts>n2pts:
-            return 1
+                        rankinfo[team.number] = {"RP":1}
+
+    # need to figure how to sort my multiple keys
+    def aveRP(n1): 
+        if n1.number in rankinfo and "RP" in rankinfo[n1.number] and "n"  in rankinfo[n1.number]:
+            return rankinfo[n1.number]["RP"]/rankinfo[n1.number]["n"]
         else:
             return 0
-    
-    teamList = list(rankinfo.keys())
-    teamList.sort(key = compare)
-    return teamList
+
+    teamList = list(teamSet)
+    ranking = sorted(teamList,key = aveRP)
+    return ranking

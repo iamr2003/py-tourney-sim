@@ -62,13 +62,13 @@ print("\n")
 
 print("Example with event simulation and teamReal: \n")
 Week1_IRsimplebg = {
-    "innerGoals" : bg(0,2,4,4),
-    "outerGoals" : bg(1,4,5,9),
+    "innerGoals" : bg(0,2,4,25),
+    "outerGoals" : bg(1,4,5,30),
     "climbs"     : bg(0,1,1,2)
 }
 
-w1_event = event(Week1_IRsimplebg,10,5)
+w1_event = event(Week1_IRsimplebg,100,6000)
 w1_event.play(IRsimple)
 #ranked in progress
-#w1_event.printTopRanked(3,rules.IRSimpleRanker)
-w1_event.printMatchResults()
+w1_event.printTopRanked(10,rules.IRSimpleRanker)
+#w1_event.printMatchResults()
