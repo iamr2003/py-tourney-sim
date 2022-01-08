@@ -142,7 +142,10 @@ def RRclimb(state):
         3:10,
         4:15
     }
-    return pts[state]
+    if state in pts:
+        return pts[state]
+    else:
+        return 0
 
 
 RR = {
@@ -226,6 +229,7 @@ def RR_ranker(matchList,teamSet):
                             rankinfo[team.number]["RP"] = 1
                     else:
                         rankinfo[team.number] = {"RP":1}
+            #nothing beyond RP yet
 
     # need to figure how to sort my multiple keys
     def aveRP(n1): 
