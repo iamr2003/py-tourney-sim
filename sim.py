@@ -8,13 +8,16 @@ def randNormal(bound = []):
     #written for explicitness, yes less mem efficient
     min = bound[0]
     max = bound[1]
+    if min > max:
+        min = bound[1]
+        max = bound[0]
     if(min == max):
         return min
     mean = (max+min)/2
-    stdev = (max - mean)/2.58 #99% bound, could be a bit bigger if needed
+    stdev = abs(max - mean)/2.58 #99% bound, could be a bit bigger if needed
 
     #all int things in the end
-    return round(numpy.random.normal(mean,stdev))
+    return round(numpy.random.normal(mean,stdev),2)
 
 class boundGen:
     #bounds on the generation of generators per team, aka how low/high the averages can go

@@ -12,9 +12,9 @@ def scoreAttrs(attrs,rules):
     for k,v in rules.items():
         if k in attrs:
             if k in attrScore:
-                attrScore[k] = v(attrs[k]) + attrScore[k]
+                attrScore[k] = v(round(attrs[k])) + attrScore[k]
             else:
-                attrScore[k] = v(attrs[k])
+                attrScore[k] = v(round(attrs[k]))
     return attrScore
 
 #for any situation where scoring is only dependent on each team's performance individually summed
